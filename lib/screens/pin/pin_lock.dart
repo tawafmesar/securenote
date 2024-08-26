@@ -59,44 +59,57 @@ class _PinLockScreenState extends State<PinLockScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blueGrey[900],
+      backgroundColor: Color.fromRGBO(94, 114, 228, 1.0),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const Text(
-                'Secure Note',
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                  fontSize: 33.0,
-                  color: Color.fromRGBO(247, 250, 252, 1.0),
-                  fontWeight: FontWeight.w800,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Image.asset(
+                  'assets/logo.png',
+                  height: 100.0,
                 ),
-              ),
-              const SizedBox(height: 40,),
-              Text(
-                _isFirstTime ? 'Create a PIN' : 'Enter PIN to Unlock',
-                style: const TextStyle(fontSize: 24.0, color: Colors.white),
-              ),
-              const SizedBox(height: 20.0),
-              TextField(
-                controller: _pinController,
-                keyboardType: TextInputType.number,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  hintText: 'Enter PIN',
-                  filled: true,
-                  fillColor: Colors.white,
+                const SizedBox(height: 20),
+
+                const SizedBox(height: 40),
+                Text(
+                  _isFirstTime ? 'Create a PIN' : 'Enter PIN to Unlock',
+                  style: const TextStyle(fontSize: 24.0, color: Colors.white),
                 ),
-              ),
-              const SizedBox(height: 20.0),
-              ElevatedButton(
-                onPressed: _validatePin,
-                child: Text(_isFirstTime ? 'Set PIN' : 'Unlock'),
-              ),
-            ],
+                const SizedBox(height: 20.0),
+                TextField(
+                  controller: _pinController,
+                  keyboardType: TextInputType.number,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    hintText: 'Enter PIN',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
+                  ),
+                ),
+                const SizedBox(height: 20.0),
+                ElevatedButton(
+                  onPressed: _validatePin,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 50.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  child: Text(
+                    _isFirstTime ? 'Set PIN' : 'Unlock',
+                    style: const TextStyle(fontSize: 18.0),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
