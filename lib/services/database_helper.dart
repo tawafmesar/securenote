@@ -7,6 +7,11 @@ import 'dart:io' as io;
 import 'package:securenote/models/noteModel.dart';
 
 
+import 'package:sqflite/sqflite.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';
+import 'dart:io' as io;
+import 'package:flutter/material.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._internal();
@@ -18,12 +23,12 @@ class DatabaseHelper {
   static const int versionNumber = 1;
 
   static const String tableNotes = 'Notes';
-
   static const String colId = 'id';
   static const String colTitle = 'title';
   static const String colDescription = 'description';
   static const String colIsArchived = 'isArchived';
   static const String colIsPinned = 'isPinned';
+  static const String colCategory = 'category';
 
   Future<Database> get database async {
     if (_database != null) {
@@ -48,7 +53,8 @@ class DatabaseHelper {
         " $colTitle TEXT NOT NULL, "
         " $colDescription TEXT,"
         " $colIsArchived INTEGER NOT NULL DEFAULT 0,"
-        " $colIsPinned INTEGER NOT NULL DEFAULT 0"
+        " $colIsPinned INTEGER NOT NULL DEFAULT 0,"
+        " $colCategory TEXT NOT NULL DEFAULT 'Work'"
         ")");
   }
 
@@ -58,6 +64,17 @@ class DatabaseHelper {
       tableNotes,
       where: '$colIsArchived = ?',
       whereArgs: [archived ? 1 : 0],
+      orderBy: '$colIsPinned DESC, $colId ASC',
+    );
+    return result.map((json) => NoteModel.fromJson(json)).toList();
+  }
+
+  Future<List<NoteModel>> getAllByCategory(String category, {bool archived = false}) async {
+    final db = await database;
+    final result = await db.query(
+      tableNotes,
+      where: '$colIsArchived = ? AND $colCategory = ?',
+      whereArgs: [archived ? 1 : 0, category],
       orderBy: '$colIsPinned DESC, $colId ASC',
     );
     return result.map((json) => NoteModel.fromJson(json)).toList();

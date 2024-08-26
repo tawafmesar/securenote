@@ -8,6 +8,8 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 
 import '../archive/archive.dart';
 
+
+
 class Home extends StatefulWidget {
   final String title;
 
@@ -18,8 +20,11 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
   DatabaseHelper noteDatabase = DatabaseHelper.instance;
   List<NoteModel> notes = [];
+  List<String> categories = ['All', 'Work', 'Personal', 'Archive'];
+  String selectedCategory = 'All';
 
   TextEditingController searchController = TextEditingController();
   bool isSearchTextNotEmpty = false;
@@ -55,11 +60,19 @@ class _HomeState extends State<Home> {
   }
 
   refreshNotes() {
-    noteDatabase.getAll().then((value) {
-      setState(() {
-        notes = value;
+    if (selectedCategory == 'All') {
+      noteDatabase.getAll().then((value) {
+        setState(() {
+          notes = value;
+        });
       });
-    });
+    } else {
+      noteDatabase.getAllByCategory(selectedCategory).then((value) {
+        setState(() {
+          notes = value;
+        });
+      });
+    }
   }
 
   goToNoteDetailsView({int? id}) async {
@@ -156,24 +169,22 @@ class _HomeState extends State<Home> {
         ],
       ),
       body: Column(
-        children: < Widget > [
+        children: <Widget>[
           TopContainer(
             height: 160,
             width: width,
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: < Widget > [
+                children: <Widget>[
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 0, vertical: 0.0
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0.0),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: < Widget > [
+                      children: <Widget>[
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
-                          children: < Widget > [
+                          children: <Widget>[
                             Container(
                               child: const Text(
                                 'Secure Note',
@@ -186,7 +197,7 @@ class _HomeState extends State<Home> {
                               ),
                             ),
                             const Text(
-                              'Manage and archive Your Notes',
+                              'Manage and categorize Your Notes',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 14.0,
@@ -224,6 +235,21 @@ class _HomeState extends State<Home> {
                       refreshNotes();
                     },
                   ),
+                DropdownButton<String>(
+                  value: selectedCategory,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedCategory = newValue!;
+                      refreshNotes();
+                    });
+                  },
+                  items: categories.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
               ],
             ),
           ),
@@ -232,8 +258,8 @@ class _HomeState extends State<Home> {
               child: Column(
                 children: [
                   Container(
-                    child: notes.isEmpty ?
-                    const Padding(
+                    child: notes.isEmpty
+                        ? const Padding(
                       padding: EdgeInsets.only(top: 50.0),
                       child: Text(
                         "No notes to display",
@@ -242,7 +268,8 @@ class _HomeState extends State<Home> {
                           fontSize: 14,
                         ),
                       ),
-                    ): Column(
+                    )
+                        : Column(
                       children: [
                         if (isSearchTextNotEmpty)
                           ...filteredNotes.map((note) {
@@ -312,17 +339,6 @@ class _HomeState extends State<Home> {
           ),
         ),
       ),
-    );
-  }
-
-  Text subheading(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-          color: Color.fromRGBO(94, 114, 228, 1.0),
-          fontSize: 20.0,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.2),
     );
   }
 }

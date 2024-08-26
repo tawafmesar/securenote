@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:securenote/models/noteModel.dart';
 import 'package:securenote/services/database_helper.dart';
 
+
 class NoteView extends StatefulWidget {
   const NoteView({Key? key, this.noteId}) : super(key: key);
   final int? noteId;
@@ -17,10 +18,12 @@ class _NoteViewState extends State<NoteView> {
   DatabaseHelper noteDatabase = DatabaseHelper.instance;
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
-
   late NoteModel note;
   bool isLoading = false;
   bool isNewNote = false;
+  String selectedCategory = 'Work';
+
+  List<String> categories = ['Work', 'Personal',];
 
   @override
   void initState() {
@@ -35,17 +38,19 @@ class _NoteViewState extends State<NoteView> {
       });
       return;
     }
+
     noteDatabase.read(widget.noteId!).then((value) {
       setState(() {
         note = value;
         titleController.text = note.title ?? '';
         descriptionController.text = note.description ?? '';
+        selectedCategory = note.category;
       });
     });
   }
 
   insert(NoteModel model) {
-    noteDatabase.insert(model).then((respond) async {
+    noteDatabase.insert(model).then((response) async {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Note successfully added."),
         backgroundColor: Color.fromARGB(255, 4, 160, 74),
@@ -63,7 +68,7 @@ class _NoteViewState extends State<NoteView> {
   }
 
   update(NoteModel model) {
-    noteDatabase.update(model).then((respond) async {
+    noteDatabase.update(model).then((response) async {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Note successfully updated."),
         backgroundColor: Color.fromARGB(255, 4, 160, 74),
@@ -88,7 +93,11 @@ class _NoteViewState extends State<NoteView> {
     if (formKey.currentState != null && formKey.currentState!.validate()) {
       formKey.currentState?.save();
 
-      NoteModel model = NoteModel(titleController.text, descriptionController.text);
+      NoteModel model = NoteModel(
+        titleController.text,
+        descriptionController.text,
+        category: selectedCategory,
+      );
 
       if (isNewNote) {
         insert(model);
@@ -97,6 +106,7 @@ class _NoteViewState extends State<NoteView> {
         update(model);
       }
     }
+
     setState(() {
       isLoading = false;
     });
@@ -202,6 +212,27 @@ class _NoteViewState extends State<NoteView> {
                     maxLines: 2,
                   ),
                 ],
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              DropdownButtonFormField<String>(
+                value: selectedCategory,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedCategory = newValue!;
+                  });
+                },
+                items: categories.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  border: OutlineInputBorder(),
+                ),
               ),
               const SizedBox(
                 height: 20,
